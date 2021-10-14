@@ -155,6 +155,7 @@ export interface QueryContext {
   /** Response format */
   result_format: string;
   queries: QueryObject[];
+  viz_type: string;
 }
 
 export default {};
