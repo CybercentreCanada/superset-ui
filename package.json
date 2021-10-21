@@ -2,7 +2,6 @@
   "name": "@superset-ui/monorepo",
   "version": "0.0.0",
   "description": "Superset UI",
-  "private": true,
   "scripts": {
     "build": "node ./scripts/build.js",
     "build:assets": "node ./scripts/copyAssets.js",
