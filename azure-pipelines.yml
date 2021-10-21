@@ -1,0 +1,39 @@
+trigger:
+  branches:
+    include:
+      - cccs-*
+      - feature/CLDN-*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build_and_Publish_Npm_Artifact
+  displayName: Build, package and publish npm artifacts.
+  jobs:
+  - job: BuildPublishNpmArtifact
+    displayName: Build, package and publish npm artifacts.
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '14.x'
+    - script: |
+        yarn install --frozen-lockfile
+      displayName: 'Install dependencies'
+    - script: |
+        yarn build
+      displayName: 'Build packages'
+    - script: |
+        yarn test
+      displayName: 'Run unit tests'
+  - job: PublishArtifactToFeedArtifact
+    dependsOn: BuildPublishNpmArtifact
+    steps:
+    - task: Npm@1
+      inputs:
+        command: publish
+        publishRegistry: useFeed
+        publishFeed: Analytical Platform/analytical-platform
