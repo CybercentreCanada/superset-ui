@@ -40,4 +40,4 @@ stages:
         command: publish
         publishRegistry: useFeed
         publishFeed: Analytical Platform/analytical-platform
-      workingDir: $(working-dir)
+        workingDir: $(working-dir)
