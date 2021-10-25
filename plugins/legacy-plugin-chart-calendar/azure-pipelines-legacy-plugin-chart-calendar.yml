@@ -24,7 +24,6 @@ stages:
     - task: NodeTool@0
       inputs:
         versionSpec: '14.x'
-      workingDirectory: $(working-dir)
     - script: |
         yarn install
       workingDirectory: $(working-dir)
@@ -41,4 +40,4 @@ stages:
         command: publish
         publishRegistry: useFeed
         publishFeed: Analytical Platform/analytical-platform
-      workingDirectory: $(working-dir)
+      workingDir: $(working-dir)
