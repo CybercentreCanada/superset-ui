@@ -12,8 +12,7 @@ pool:
 
 variables:
   tag: '$(Build.BuildId)'
-  - name: working-dir
-    value: 'plugins/legacy-plugin-chart-calendar/'
+  working-dir: 'plugins/legacy-plugin-chart-calendar/'
 
 stages:
 - stage: Build_and_Publish_Npm_Artifact
