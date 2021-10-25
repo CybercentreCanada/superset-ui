@@ -1,4 +1,7 @@
 trigger:
+  paths:
+    include:
+      - 'plugins/legacy-plugin-chart-calendar*'
   branches:
     include:
       - cccs-*
@@ -9,6 +12,8 @@ pool:
 
 variables:
   tag: '$(Build.BuildId)'
+  - name: working-dir
+    value: 'plugins/legacy-plugin-chart-calendar/'
 
 stages:
 - stage: Build_and_Publish_Npm_Artifact
@@ -20,15 +25,15 @@ stages:
     - task: NodeTool@0
       inputs:
         versionSpec: '14.x'
+      workingDirectory: $(working-dir)
     - script: |
-        yarn install --frozen-lockfile
+        yarn install
+      workingDirectory: $(working-dir)
       displayName: 'Install dependencies'
     - script: |
         yarn build
+      workingDirectory: $(working-dir)
       displayName: 'Build packages'
-    - script: |
-        yarn test
-      displayName: 'Run unit tests'
   - job: PublishArtifactToFeedArtifact
     dependsOn: BuildPublishNpmArtifact
     steps:
@@ -37,3 +42,4 @@ stages:
         command: publish
         publishRegistry: useFeed
         publishFeed: Analytical Platform/analytical-platform
+      workingDirectory: $(working-dir)
