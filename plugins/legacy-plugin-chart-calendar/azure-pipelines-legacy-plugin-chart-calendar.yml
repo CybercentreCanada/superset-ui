@@ -11,8 +11,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  tag: '$(Build.BuildId)'
-  working-dir: 'plugins/legacy-plugin-chart-calendar/'
+  - name: working-dir
+    value: 'plugins/legacy-plugin-chart-calendar/'
 
 stages:
 - stage: Build_and_Publish_Npm_Artifact
