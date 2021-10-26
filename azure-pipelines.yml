@@ -32,7 +32,7 @@ stages:
   - job: PublishArtifactToFeedArtifact
     dependsOn: BuildPublishNpmArtifact
     steps:
-    - template : createSQLDB-template.yml
+    - template : publish-template.yml
       parameters:
         workingDirs: [
           "packages/generator-superset",
