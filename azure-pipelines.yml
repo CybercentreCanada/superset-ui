@@ -32,9 +32,12 @@ stages:
   - job: PublishArtifactToFeedArtifact
     dependsOn: BuildPublishNpmArtifact
     steps:
-    - task: Npm@1
-      inputs:
-        command: publish
-        publishRegistry: useFeed
-        publishFeed: Analytical Platform/analytical-platform
-        workingDir: packages/superset-ui-core
+    - template : createSQLDB-template.yml
+      parameters:
+        workingDirs: [
+          "packages/generator-superset",
+          "packages/superset-ui-chart-controls",
+          "packages/superset-ui-core",
+          "packages/superset-ui-demo",
+          "plugins/legacy-plugin-chart-calendar"
+        ]
