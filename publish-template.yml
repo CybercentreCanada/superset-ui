@@ -4,8 +4,8 @@ parameters:
 steps:
 - ${{ each dir in parameters.workingDirs }}:
   - task: Npm@1
-      inputs:
-        command: publish
-        publishRegistry: useFeed
-        publishFeed: Analytical Platform/analytical-platform
-        workingDir: ${{ dir }}
+    inputs:
+      command: publish
+      publishRegistry: useFeed
+      publishFeed: Analytical Platform/analytical-platform
+      workingDir: ${{ dir }}
