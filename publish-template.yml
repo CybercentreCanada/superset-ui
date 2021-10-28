@@ -8,7 +8,7 @@ steps:
       NewPackageVersion=$(npm list --json --depth=0 --silent | sed -n 3p | cut -d '"' -f4)
       echo "##vso[task.setvariable variable=PackageName;]$PackageName"
       echo "##vso[task.setvariable variable=NewPackageVersion;]$NewPackageVersion"
-    diplayName: "Get package name and version"
+    displayName: "Get package name and version"
   - task: Npm@1
     inputs:
       command: publish
