@@ -59,11 +59,11 @@ stages:
           "plugins/legacy-plugin-chart-time-table",
           "plugins/legacy-plugin-chart-treemap",
           "plugins/legacy-plugin-chart-world-map",
-          "plugins/legacy-plugin-chart-big-number",
-          "plugins/legacy-plugin-chart-nvd3",
+          "plugins/legacy-preset-chart-big-number",
+          "plugins/legacy-preset-chart-nvd3",
           "plugins/plugin-chart-echarts",
           "plugins/plugin-chart-pivot-table",
           "plugins/plugin-chart-table",
           "plugins/plugin-chart-word-cloud",
-          "plugins/plugin-chart-xy"
+          "plugins/preset-chart-xy"
         ]
