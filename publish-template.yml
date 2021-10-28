@@ -3,6 +3,11 @@ parameters:
 
 steps:
 - ${{ each dir in parameters.workingDirs }}:
+  - script: |
+      PackageName=$(npm list --json --depth=0 --silent | sed -n 2p | cut -d '"' -f4)
+      NewPackageVersion=$(npm list --json --depth=0 --silent | sed -n 3p | cut -d '"' -f4)
+      echo "##vso[task.setvariable variable=PackageName;]$PackageName"
+      echo "##vso[task.setvariable variable=NewPackageVersion;]$NewPackageVersion"
   - task: Npm@1
     inputs:
       command: publish
@@ -10,4 +15,4 @@ steps:
       publishFeed: Analytical Platform/analytical-platform
       workingDir: ${{ dir }}
     continueOnError: true
-    displayName: "Publish package"
+    displayName: "Publish package $(PackageName):$(NewPackageVersion)"
