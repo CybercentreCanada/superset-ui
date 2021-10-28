@@ -3,20 +3,11 @@ parameters:
 
 steps:
 - ${{ each dir in parameters.workingDirs }}:
-  - script: |
-      PackageName=$(npm list --json --depth=0 --silent | sed -n 2p | cut -d '"' -f4)
-      NewPackageVersion=$(npm list --json --depth=0 --silent | sed -n 3p | cut -d '"' -f4)
-      PublishedPackageVersion=$(npm show $PackageName version)
-      echo "##vso[task.setvariable variable=NewPackageVersion;]$NewPackageVersion"
-      echo "##vso[task.setvariable variable=PublishedPackageVersion;]$PublishedPackageVersion"
-    workingDirectory: ${{ dir }}
-    displayName: "Extract package version"
   - task: Npm@1
     inputs:
       command: publish
       publishRegistry: useFeed
       publishFeed: Analytical Platform/analytical-platform
       workingDir: ${{ dir }}
-    condition: |
-      and(succeeded(), ne(variables['NewPackageVersion'], variables['PublishedPackageVersion']))
+    continueOnError: true
     displayName: "Publish package"
