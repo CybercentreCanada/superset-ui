@@ -148,7 +148,7 @@ export interface BaseFormData extends TimeRange, FormDataResidual {
    * buildQuery function from the plugin.
    * Can put "custom" (or any string) in this field in that case.
    */
-  viz_type: string;
+  viz_type?: string;
   metrics?: QueryFormMetric[];
   where?: string;
   columns?: QueryFormColumn[];
