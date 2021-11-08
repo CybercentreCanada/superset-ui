@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@superset-ui/chart-controls": "0.17.84",
-    "@superset-ui/core": "0.17.81",
+    "@superset-ui/core": "0.17.81-cccs.0",
     "@superset-ui/react-pivottable": "^0.12.12"
   },
   "peerDependencies": {

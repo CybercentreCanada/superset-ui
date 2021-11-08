@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@superset-ui/chart-controls": "0.17.84",
-    "@superset-ui/core": "0.17.81",
+    "@superset-ui/core": "0.17.81-cccs.0",
     "@types/mathjs": "^6.0.7",
     "d3-array": "^1.2.0",
     "echarts": "^5.1.2",

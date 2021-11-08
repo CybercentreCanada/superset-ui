@@ -30,7 +30,7 @@
   "dependencies": {
     "@data-ui/sparkline": "^0.0.84",
     "@superset-ui/chart-controls": "0.17.84",
-    "@superset-ui/core": "0.17.81",
+    "@superset-ui/core": "0.17.81-cccs.0",
     "@types/d3-scale": "^2.0.2",
     "d3-scale": "^3.2.1",
     "moment": "^2.26.0",
