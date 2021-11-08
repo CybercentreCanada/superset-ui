@@ -62,5 +62,6 @@ stages:
           - plugins/legacy-preset-chart-nvd3
           - plugins/plugin-chart-echarts
           - plugins/plugin-chart-pivot-table
+          - plugins/plugin-chart-table
           - plugins/plugin-chart-word-cloud
           - plugins/preset-chart-xy
