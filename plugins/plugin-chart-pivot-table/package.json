@@ -1,6 +1,6 @@
 {
   "name": "@superset-ui/plugin-chart-pivot-table",
-  "version": "0.17.84",
+  "version": "0.17.84-cccs.0",
   "description": "Superset Chart - Pivot Table",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@superset-ui/chart-controls": "0.17.84",
-    "@superset-ui/core": "0.17.81-cccs.0",
+    "@superset-ui/core": "0.17.81-cccs.1",
     "@superset-ui/react-pivottable": "^0.12.12"
   },
   "peerDependencies": {
