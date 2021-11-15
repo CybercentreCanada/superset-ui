@@ -7,6 +7,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
+  npmrc: $(Build.SourcesDirectory)/.npmrc
   tag: $(Build.BuildId)
 
 stages:
@@ -16,6 +17,10 @@ stages:
   - job: BuildNpmArtifacts
     displayName: Build, package and publish npm artifacts.
     steps:
+    - task: npmAuthenticate@0
+      inputs:
+        workingFile: $(npmrc)
+      displayName: Authenticate to npm feed
     - task: NodeTool@0
       inputs:
         versionSpec: 14.x
