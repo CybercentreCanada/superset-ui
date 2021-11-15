@@ -28,9 +28,6 @@ stages:
     - script: |
         yarn test
       displayName: Run unit tests
-  - job: PublishArtifactsToFeed
-    dependsOn: BuildNpmArtifacts
-    steps:
     - template : publish-template.yml
       parameters:
         workingDirs:
