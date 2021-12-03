@@ -281,12 +281,11 @@ export default function TableChart<D extends DataRecord = DataRecord>(
         // filters for metrics are derived from the selectedMetricRows
         updatedFilters = {};
 
-        // add or remove the selected row from selectedMetricRows
+        // replace the selected row from selectedMetricRows
         if (selectedMetricRows.current.some(r => r?.id == row.id)) {
-          const newList = selectedMetricRows.current.filter(r => r.id != row.id);
-          selectedMetricRows.current.splice(0, selectedMetricRows.current.length, ...newList);
+          selectedMetricRows.current = [];
         } else {
-          selectedMetricRows.current.push(row);
+          selectedMetricRows.current = [row];
         }
 
         // update the filters according to the selected rows
