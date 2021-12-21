@@ -24,7 +24,13 @@ import {
   TimeGranularity,
 } from '@superset-ui/core';
 import { sections } from '@superset-ui/chart-controls';
-import { DEFAULT_LEGEND_FORM_DATA, EchartsLegendFormData, EChartTransformedProps } from '../types';
+import {
+  DEFAULT_LEGEND_FORM_DATA,
+  EchartsLegendFormData,
+  EChartTransformedProps,
+  EchartsTitleFormData,
+  DEFAULT_TITLE_FORM_DATA,
+} from '../types';
 
 export enum EchartsTimeseriesContributionType {
   Row = 'row',
@@ -64,9 +70,6 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   tooltipTimeFormat?: string;
   truncateYAxis: boolean;
   yAxisFormat?: string;
-  yAxisTitle: string;
-  xAxisShowMinLabel?: boolean;
-  xAxisShowMaxLabel?: boolean;
   xAxisTimeFormat?: string;
   timeGrainSqla?: TimeGranularity;
   yAxisBounds: [number | undefined | null, number | undefined | null];
@@ -76,7 +79,9 @@ export type EchartsTimeseriesFormData = QueryFormData & {
   emitFilter: boolean;
   groupby: string[];
   showValue: boolean;
-} & EchartsLegendFormData;
+  onlyTotal: boolean;
+} & EchartsLegendFormData &
+  EchartsTitleFormData;
 
 // @ts-ignore
 export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
@@ -106,8 +111,9 @@ export const DEFAULT_FORM_DATA: EchartsTimeseriesFormData = {
   xAxisLabelRotation: 0,
   emitFilter: false,
   groupby: [],
-  yAxisTitle: '',
   showValue: false,
+  onlyTotal: false,
+  ...DEFAULT_TITLE_FORM_DATA,
 };
 
 export interface EchartsTimeseriesChartProps extends ChartProps {

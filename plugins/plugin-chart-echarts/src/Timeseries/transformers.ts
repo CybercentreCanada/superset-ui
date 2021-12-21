@@ -18,11 +18,11 @@
  */
 import {
   AnnotationData,
-  AnnotationLayer,
   AnnotationOpacity,
   CategoricalColorScale,
   EventAnnotationLayer,
   FilterState,
+  FormulaAnnotationLayer,
   getTimeFormatter,
   IntervalAnnotationLayer,
   isTimeseriesAnnotationResult,
@@ -36,7 +36,7 @@ import {
 import { SeriesOption } from 'echarts';
 import {
   CallbackDataParams,
-  DefaultExtraStateOpts,
+  DefaultStatesMixin,
   ItemStyleOption,
   LineStyleOption,
   OptionName,
@@ -58,7 +58,7 @@ import {
   formatAnnotationLabel,
   parseAnnotationOpacity,
 } from '../utils/annotation';
-import { getChartPadding } from '../utils/series';
+import { currentSeries, getChartPadding } from '../utils/series';
 import { OpacityEnum, TIMESERIES_CONSTANTS } from '../constants';
 
 export function transformSeries(
@@ -67,7 +67,7 @@ export function transformSeries(
   opts: {
     area?: boolean;
     filterState?: FilterState;
-    forecastEnabled?: boolean;
+    seriesContexts?: { [key: string]: ForecastSeriesEnum[] };
     markerEnabled?: boolean;
     markerSize?: number;
     areaOpacity?: number;
@@ -75,6 +75,7 @@ export function transformSeries(
     stack?: boolean;
     yAxisIndex?: number;
     showValue?: boolean;
+    onlyTotal?: boolean;
     formatter?: NumberFormatter;
     totalStackedValues?: number[];
     showValueIndexes?: number[];
@@ -85,7 +86,7 @@ export function transformSeries(
   const {
     area,
     filterState,
-    forecastEnabled,
+    seriesContexts = {},
     markerEnabled,
     markerSize,
     areaOpacity = 1,
@@ -93,11 +94,17 @@ export function transformSeries(
     stack,
     yAxisIndex = 0,
     showValue,
+    onlyTotal,
     formatter,
     totalStackedValues = [],
     showValueIndexes = [],
     richTooltip,
   } = opts;
+  const contexts = seriesContexts[name || ''] || [];
+  const hasForecast =
+    contexts.includes(ForecastSeriesEnum.ForecastTrend) ||
+    contexts.includes(ForecastSeriesEnum.ForecastLower) ||
+    contexts.includes(ForecastSeriesEnum.ForecastUpper);
 
   const forecastSeries = extractForecastSeriesContext(name || '');
   const isConfidenceBand =
@@ -123,7 +130,7 @@ export function transformSeries(
     stackId = forecastSeries.type;
   }
   let plotType;
-  if (!isConfidenceBand && (seriesType === 'scatter' || (forecastEnabled && isObservation))) {
+  if (!isConfidenceBand && (seriesType === 'scatter' || (hasForecast && isObservation))) {
     plotType = 'scatter';
   } else if (isConfidenceBand) {
     plotType = 'line';
@@ -139,7 +146,7 @@ export function transformSeries(
   if (!isConfidenceBand) {
     if (plotType === 'scatter') {
       showSymbol = true;
-    } else if (forecastEnabled && isObservation) {
+    } else if (hasForecast && isObservation) {
       showSymbol = true;
     } else if (plotType === 'line' && showValue) {
       showSymbol = true;
@@ -166,16 +173,17 @@ export function transformSeries(
     // @ts-ignore
     type: plotType,
     smooth: seriesType === 'smooth',
+    triggerLineEvent: true,
     // @ts-ignore
     step: ['start', 'middle', 'end'].includes(seriesType as string) ? seriesType : undefined,
     stack: stackId,
     lineStyle,
-    areaStyle: {
-      opacity:
-        forecastSeries.type === ForecastSeriesEnum.ForecastUpper || area
-          ? opacity * areaOpacity
-          : 0,
-    },
+    areaStyle: area
+      ? {
+          opacity:
+            forecastSeries.type === ForecastSeriesEnum.ForecastUpper ? opacity * areaOpacity : 0,
+        }
+      : undefined,
     emphasis,
     showSymbol,
     symbolSize: markerSize,
@@ -187,24 +195,24 @@ export function transformSeries(
           value: [, numericValue],
           dataIndex,
           seriesIndex,
+          seriesName,
         } = params;
-        if (formatter) {
-          if (!stack) {
-            return formatter(numericValue);
-          }
-          if (seriesIndex === showValueIndexes[dataIndex]) {
-            return formatter(totalStackedValues[dataIndex]);
-          }
-          return '';
+        const isSelectedLegend = currentSeries.legend === seriesName;
+        if (!formatter) return numericValue;
+        if (!stack || !onlyTotal || isSelectedLegend) {
+          return formatter(numericValue);
         }
-        return numericValue;
+        if (seriesIndex === showValueIndexes[dataIndex]) {
+          return formatter(totalStackedValues[dataIndex]);
+        }
+        return '';
       },
     },
   };
 }
 
 export function transformFormulaAnnotation(
-  layer: AnnotationLayer,
+  layer: FormulaAnnotationLayer,
   data: TimeseriesDataRecord[],
   colorScale: CategoricalColorScale,
 ): SeriesOption {
@@ -224,7 +232,6 @@ export function transformFormulaAnnotation(
     smooth: true,
     data: evalFormula(layer, data),
     symbolSize: 0,
-    z: 0,
   };
 }
 
@@ -298,11 +305,11 @@ export function transformEventAnnotation(
     const eventData: MarkLine1DDataItemOption[] = [
       {
         name: label,
-        xAxis: (time as unknown) as number,
+        xAxis: time as unknown as number,
       },
     ];
 
-    const lineStyle: LineStyleOption & DefaultExtraStateOpts['emphasis'] = {
+    const lineStyle: LineStyleOption & DefaultStatesMixin['emphasis'] = {
       width,
       type: style as ZRLineType,
       color: color || colorScale(name),
@@ -372,22 +379,33 @@ export function transformTimeseriesAnnotation(
 export function getPadding(
   showLegend: boolean,
   legendOrientation: LegendOrientation,
-  addYAxisLabelOffset: boolean,
+  addYAxisTitleOffset: boolean,
   zoomable: boolean,
   margin?: string | number | null,
+  addXAxisTitleOffset?: boolean,
+  yAxisTitlePosition?: string,
+  yAxisTitleMargin?: number,
+  xAxisTitleMargin?: number,
 ): {
   bottom: number;
   left: number;
   right: number;
   top: number;
 } {
-  const yAxisOffset = addYAxisLabelOffset ? TIMESERIES_CONSTANTS.yAxisLabelTopOffset : 0;
+  const yAxisOffset = addYAxisTitleOffset ? TIMESERIES_CONSTANTS.yAxisLabelTopOffset : 0;
+  const xAxisOffset = addXAxisTitleOffset ? xAxisTitleMargin || 0 : 0;
   return getChartPadding(showLegend, legendOrientation, margin, {
-    top: TIMESERIES_CONSTANTS.gridOffsetTop + yAxisOffset,
+    top:
+      yAxisTitlePosition && yAxisTitlePosition === 'Top'
+        ? TIMESERIES_CONSTANTS.gridOffsetTop + (yAxisTitleMargin || 0)
+        : TIMESERIES_CONSTANTS.gridOffsetTop + yAxisOffset,
     bottom: zoomable
-      ? TIMESERIES_CONSTANTS.gridOffsetBottomZoomable
-      : TIMESERIES_CONSTANTS.gridOffsetBottom,
-    left: TIMESERIES_CONSTANTS.gridOffsetLeft,
+      ? TIMESERIES_CONSTANTS.gridOffsetBottomZoomable + xAxisOffset
+      : TIMESERIES_CONSTANTS.gridOffsetBottom + xAxisOffset,
+    left:
+      yAxisTitlePosition === 'Left'
+        ? TIMESERIES_CONSTANTS.gridOffsetLeft + (yAxisTitleMargin || 0)
+        : TIMESERIES_CONSTANTS.gridOffsetLeft,
     right:
       showLegend && legendOrientation === LegendOrientation.Right
         ? 0
