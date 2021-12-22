@@ -108,7 +108,7 @@ export default class LineChart extends PureComponent<Props> {
 
   private createAllSeries = createSelector(
     (input: { encoder: LineEncoder; data: Dataset }) => input.encoder,
-    input => input.data,
+    (input: any) => input.data,
     (encoder, data) => {
       const { channels } = encoder;
       const fieldNames = encoder.getGroupBys();
