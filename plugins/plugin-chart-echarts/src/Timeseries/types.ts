@@ -122,3 +122,7 @@ export interface EchartsTimeseriesChartProps extends ChartProps {
 }
 
 export type TimeseriesChartTransformedProps = EChartTransformedProps<EchartsTimeseriesFormData>;
+
+export function doesSupportGrainSelection(type: EchartsTimeseriesSeriesType): boolean {
+  return [EchartsTimeseriesSeriesType.Scatter, EchartsTimeseriesSeriesType.Bar].includes(type);
+}
