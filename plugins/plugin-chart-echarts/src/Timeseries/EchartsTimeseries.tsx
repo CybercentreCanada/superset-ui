@@ -22,8 +22,8 @@ import GlobalModel from 'echarts/types/src/model/Global';
 import ComponentModel from 'echarts/types/src/model/Component';
 import { EchartsHandler, EventHandlers } from '../types';
 import Echart from '../components/Echart';
-import { TimeseriesChartTransformedProps } from './types';
 import { currentSeries } from '../utils/series';
+import { doesSupportGrainSelection, TimeseriesChartTransformedProps } from './types';
 
 const TIMER_DURATION = 300;
 // @ts-ignore
@@ -94,6 +94,18 @@ export default function EchartsTimeseries({
           filters:
             values.length === 0
               ? []
+              : doesSupportGrainSelection(formData.seriesType) && groupby.length === 0
+              ? // special case when there are no series
+                // the only value we are given is the time in epoch seconds
+                // create a filter with the grain of the chart
+                [
+                  {
+                    col: formData.granularitySqla,
+                    op: '==',
+                    val: Number(values[0]),
+                    grain: formData.timeGrainSqla,
+                  },
+                ]
               : groupby.map((col, idx) => {
                   const val = groupbyValues.map(v => v[idx]);
                   if (val === null || val === undefined)

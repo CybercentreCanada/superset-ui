@@ -27,10 +27,12 @@ import {
   isTimeseriesAnnotationLayer,
   TimeseriesChartDataResponseResult,
   DataRecordValue,
+  CategoricalColorScale,
 } from '@superset-ui/core';
 import { EChartsCoreOption, SeriesOption } from 'echarts';
 import {
   DEFAULT_FORM_DATA,
+  doesSupportGrainSelection,
   EchartsTimeseriesChartProps,
   EchartsTimeseriesFormData,
   TimeseriesChartTransformedProps,
@@ -68,10 +70,8 @@ export default function transformProps(
 ): TimeseriesChartTransformedProps {
   const { width, height, filterState, formData, hooks, queriesData, datasource } = chartProps;
   const { verboseMap = {} } = datasource;
-  const {
-    annotation_data: annotationData_,
-    data = [],
-  } = queriesData[0] as TimeseriesChartDataResponseResult;
+  const { annotation_data: annotationData_, data = [] } =
+    queriesData[0] as TimeseriesChartDataResponseResult;
   const annotationData = annotationData_ || {};
 
   const {
@@ -109,7 +109,8 @@ export default function transformProps(
     yAxisTitlePosition,
   }: EchartsTimeseriesFormData = { ...DEFAULT_FORM_DATA, ...formData };
   const colorScale = CategoricalColorNamespace.getScale(colorScheme as string);
-  const rebasedData = rebaseTimeseriesDatum(data, verboseMap);
+  const monoScale = new CategoricalColorScale([colorScale.colors[0]]);
+  const rebasedData = rebaseTimeseriesDatum(data);
   const rawSeries = extractTimeseriesSeries(rebasedData, {
     fillNeighborValue: stack && !forecastEnabled ? 0 : undefined,
   });
@@ -141,25 +142,61 @@ export default function transformProps(
     });
   }
 
-  rawSeries.forEach(entry => {
-    const transformedSeries = transformSeries(entry, colorScale, {
-      area,
-      filterState,
-      forecastEnabled,
-      markerEnabled,
-      markerSize,
-      areaOpacity: opacity,
-      seriesType,
-      stack,
-      formatter,
-      showValue,
-      onlyTotal,
-      totalStackedValues,
-      showValueIndexes,
-      richTooltip,
+  const tooltipFormatter = getTooltipTimeFormatter(tooltipTimeFormat);
+
+  if (doesSupportGrainSelection(seriesType) && groupby.length === 0) {
+    // special case when there are no series (nothing in the groupby)
+    // the only aggregation is against the grain
+    // In that situation we create series for each grain value (for example each month)
+    // The id is the label we want displayed in the tooltip
+    // The name is the value selected and emitted in this case the truncated timestamp in seconds
+    // The data is single time/metric pair
+    rawSeries.forEach(entry => {
+      const data = entry.data as any[];
+      data.forEach(datapoint => {
+        let newEntry = {
+          id: `${tooltipFormatter(datapoint[0])}`,
+          name: '' + datapoint[0].getTime(),
+          data: [datapoint],
+        };
+        const transformedSeries = transformSeries(newEntry, monoScale, {
+          area,
+          filterState,
+          forecastEnabled,
+          markerEnabled,
+          markerSize,
+          areaOpacity: opacity,
+          seriesType,
+          stack,
+          formatter,
+          showValue,
+          totalStackedValues,
+          showValueIndexes,
+          richTooltip,
+        });
+        if (transformedSeries) series.push(transformedSeries);
+      });
     });
-    if (transformedSeries) series.push(transformedSeries);
-  });
+  } else {
+    rawSeries.forEach(entry => {
+      const transformedSeries = transformSeries(entry, colorScale, {
+        area,
+        filterState,
+        forecastEnabled,
+        markerEnabled,
+        markerSize,
+        areaOpacity: opacity,
+        seriesType,
+        stack,
+        formatter,
+        showValue,
+        totalStackedValues,
+        showValueIndexes,
+        richTooltip,
+      });
+      if (transformedSeries) series.push(transformedSeries);
+    });
+  }
 
   const selectedValues = (filterState.selectedValues || []).reduce(
     (acc: Record<string, number>, selectedValue: string) => {
@@ -195,7 +232,6 @@ export default function transformProps(
     if (max === undefined) max = 1;
   }
 
-  const tooltipFormatter = getTooltipTimeFormatter(tooltipTimeFormat);
   const xAxisFormatter = getXAxisFormatter(xAxisTimeFormat);
 
   const labelMap = series.reduce((acc: Record<string, DataRecordValue[]>, datum) => {
@@ -269,9 +305,8 @@ export default function transformProps(
         const prophetValue = !richTooltip ? [params] : params;
 
         const rows: Array<string> = [`${tooltipFormatter(value)}`];
-        const prophetValues: Record<string, ProphetValue> = extractProphetValuesFromTooltipParams(
-          prophetValue,
-        );
+        const prophetValues: Record<string, ProphetValue> =
+          extractProphetValuesFromTooltipParams(prophetValue);
 
         Object.keys(prophetValues).forEach(key => {
           const value = prophetValues[key];
@@ -319,6 +354,13 @@ export default function transformProps(
         ]
       : [],
   };
+
+  // In the special case where there is no groupby our series will
+  // be the grain values. In this case we only value to display per series
+  // we align all the bars to the left.
+  if (doesSupportGrainSelection(seriesType) && groupby.length === 0) {
+    echartOptions.barGap = '-100%';
+  }
 
   return {
     echartOptions,
