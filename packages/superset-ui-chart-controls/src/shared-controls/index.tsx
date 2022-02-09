@@ -108,6 +108,7 @@ const groupByControl: SharedControlConfig<'SelectControl', ColumnMeta> = {
   ),
   optionRenderer: c => <ColumnOption showType column={c} />,
   valueRenderer: c => <ColumnOption column={c} />,
+  deprecatedSelectFlag: true,
   valueKey: 'column_name',
   allowAll: true,
   filterOption: ({ data: opt }, text: string) =>
