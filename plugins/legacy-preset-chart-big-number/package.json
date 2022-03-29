@@ -30,7 +30,7 @@
   "dependencies": {
     "@data-ui/xy-chart": "^0.0.84",
     "@superset-ui/chart-controls": "0.18.19-cccs.0",
-    "@superset-ui/core": "0.18.19",
+    "@superset-ui/core": "0.18.19-cccs.0",
     "@types/d3-color": "^1.2.2",
     "@types/shortid": "^0.0.29",
     "d3-color": "^1.2.3",
